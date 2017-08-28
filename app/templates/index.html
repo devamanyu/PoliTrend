@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<meta http-equiv="cache-control" content="no-cache"> 
+<meta http-equiv="expires" content="0"> 
+<meta http-equiv="pragma" content="no-cache">
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>PoliTrend</title>
+    <!-- favicon -->
+    <link href="{{ url_for('static',filename='favicon.png') }}" rel=icon>
+
+    <!-- web-fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet">
+
+    <!-- font-awesome -->
+    <link href="{{ url_for('static',filename='css/font-awesome.min.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Style CSS -->
+    <link href="{{ url_for('static',filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/jqcloud.min.css') }}"  rel="stylesheet">
+
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar">
+    <div id="main-wrapper">
+        <!-- Page Preloader -->
+        <div id="preloader">
+            <div id="status">
+                <div class="status-mes"></div>
+            </div>
+        </div>
+
+        <div class="columns-block container">
+            <div class="left-col-block blocks">
+                <header class="header theiaStickySidebar">
+                    <div class="profile-img">
+                        <img src="" class="{{ url_for('static',filename='img/signature.png') }}" alt="" class="img-responsive"/>
+                    </div>
+                    <div class="content">
+                    <h1>PoliTrend</h1>
+                        <span class="lead">This app demonstrates the sentiment trend of a political entity 
+                        in the history of their Wikipedia page.</span>
+                        <br/>
+                        <br/>
+                        <div class="about-text">
+                            <p>Choose any political entity from the menu to see the trend. </p>
+                        </div>
+                        <div id="cloud">
+                        </div>  
+
+
+                        <p align="right"><small>Created by Devamanyu Hazarika.</small></p>
+                    </div>
+
+                </header>
+                <!-- .header-->
+            </div>
+            <!-- .left-col-block -->
+
+            <div class="right-col-block blocks">
+                <div class="theiaStickySidebar">
+
+                </div>
+                <section class="aboutme-wrapper section-wrapper gray-bg">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="expertise-item">                                      
+                                    <div class="dropdown">
+                                        <button class="btn btn-block dropdown-toggle" id="dlDropDown" type="button" data-toggle="dropdown">Select Political Entity
+                                            <span class="caret"></span></button>
+                                            <ul class="dropdown-menu" id="linkList" role="menu">
+                                            </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="myDIV">
+                      <p align="right">Loading...</p>
+                    </div>
+                    <div id="plot">
+                    </div>
+                    </section>
+                </div>
+
+                <!-- .right-col-block -->
+            </div>
+            <!-- .columns-block -->
+        </div>
+        <!-- #main-wrapper -->
+
+        <!-- jquery -->
+
+        <script src="{{ url_for('static',filename='js/jquery-2.1.4.min.js') }}"></script>
+        <!-- Bootstrap -->
+        <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static',filename='js/theia-sticky-sidebar.js') }}"></script>
+        <script src="{{ url_for('static',filename='js/scripts.js') }}"></script>
+        <script src="{{ url_for('static',filename='js/d3.v3.min.js') }}"></script>
+        <script src="{{ url_for('static',filename='js/jqcloud.min.js') }}"></script>
+
+        <script>
+            $(function() {
+                var first = true;
+
+                var disp = document.getElementById('myDIV');
+                var dispgraph = document.getElementById('plot');
+                disp.style.display = 'none';
+
+
+                $.ajax({
+
+                    url: '/getName',
+                    type: 'POST',
+                    success: function(response) {
+
+                        // Response populates the list of political party in DB
+                        console.log(response);
+                        data = response
+                        var words = []
+                        $.each( JSON.parse(data), function( index, val ) {
+                            var $li = $("<li><a href='#' class='download'>"+val+"</a></li>");      
+                            $("#linkList").append($li);   
+                            words.push({text: val, weight: Math.random()*Math.random()})
+                        });
+
+                        //WordCloud formation
+                        $('#cloud').jQCloud(words, {
+                          width: 400, height: 300, 
+                          classPattern: null,
+                          colors: ["#800026", "#bd0026", "#e31a1c", "#fc4e2a", "#fd8d3c", "#feb24c", "#fed976", "#ffeda0", "#ffffcc"],
+                          fontSize: {
+                            from: 0.04,
+                            to: 0.01
+                          },delay:200
+                        });
+
+                        // Set up the plot window.
+
+                        // Set the dimensions of the canvas / graph
+                        var margin = {top: 100, right: 20, bottom: 60, left: 55},
+                        width = 605 - margin.left - margin.right,
+                        height = 300 - margin.bottom;
+                        padding =  100; // space around the chart, not including labels
+
+                        // Parse the date / time
+                        var parseDate = d3.time.format("%d-%b-%y").parse;
+
+                        // Set the ranges
+                        var x = d3.time.scale().range([0, width]);
+                        var y = d3.scale.linear().range([height, 0]);
+
+                        // Define the axes
+                        var xAxis = d3.svg.axis().scale(x)
+                        .orient("bottom").ticks(5);
+
+                        var yAxis = d3.svg.axis().scale(y)
+                        .orient("left").ticks(5);
+
+                        // Define the line
+                        var valueline = d3.svg.line()
+                        .x(function(d) { return x(d.date); })
+                        .y(function(d) { return y(d.close); });
+
+                        var myLabel;
+
+                        //invoke function upon clicking a political entity
+                        $('.dropdown-menu > li > a').click(function(event){
+                            event.stopPropagation();
+                            $("#dlDropDown").dropdown("toggle");
+                            var name = JSON.stringify($(this).text());
+
+                            
+                            disp.style.display = 'block';
+                            dispgraph.style.display = 'none';
+
+                            $.ajax({ 
+                                url: '/getSentiment',
+                                datatype: "json",
+                                data: name,
+                                contentType: 'application/json;charset=UTF-8',
+                                type: 'POST',
+                                success: function(response) {
+
+                                    disp.style.display = 'none';
+                                    dispgraph.style.display = 'block';
+
+                                    var json = $.parseJSON(response);
+                                    console.log(json)
+
+                                    //Updating word cloud
+                                    words.splice(-5);
+                                    $('#cloud').jQCloud('update', words);
+
+
+                                    if (first){
+
+                                        first = false;
+
+                                        // Adds the svg canvas
+                                        var svg = d3.select("#plot")
+                                        .append("svg")
+                                        .attr("width", width + margin.left + margin.right)
+                                        .attr("height", height + margin.top + margin.bottom)
+                                        .append("g")
+                                        .attr("transform", 
+                                          "translate(" + margin.left + "," + margin.top + ")");
+
+                                        // Get the data
+                                        d3.csv("/static/"+json+".csv", function(error, data) {
+                                            data.forEach(function(d) {
+                                                d.date = parseDate(d.date);
+                                                d.close = +d.close;
+                                            });
+
+                                            // Scale the range of the data
+                                            x.domain(d3.extent(data, function(d) { return d.date; }));
+                                            y.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+                                            // Add the valueline path.
+                                            svg.append("path")
+                                            .attr("class", "line")
+                                            .attr("d", valueline(data));
+
+                                            // Add the X Axis
+                                            svg.append("g")
+                                            .attr("class", "x axis")
+                                            .attr("transform", "translate(0," + height + ")")
+                                            .call(xAxis);
+
+                                            // Add the Y Axis
+                                            svg.append("g")
+                                            .attr("class", "y axis")
+                                            .call(yAxis);
+
+                                            // now add titles to the axes
+                                            svg.append("text")
+                                                .attr("text-anchor", "middle")
+                                                .attr("transform", "translate("+ -40 +","+(height/2)+")rotate(-90)")  
+                                                .text("Sentiment Trend");
+
+                                            myLabel = svg.append("text")
+                                                .attr("text-anchor", "middle") 
+                                                .attr("transform", "translate("+ (width/2) +","+(height+(padding/2))+")")
+                                                .text(name);
+
+                                        });
+                                    }
+                                    else{
+                                        updateData(json)
+                                    }
+
+                                    function updateData(json) {
+
+                                        // Get the data again
+                                        d3.csv("/static/"+json+".csv", function(error, data) {
+                                            data.forEach(function(d) {
+                                                d.date = parseDate(d.date);
+                                                d.close = +d.close;
+                                            });
+
+                                        // Scale the range of the data again 
+                                        x.domain(d3.extent(data, function(d) { return d.date; }));
+                                        y.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+                                        // Select the section we want to apply our changes to
+                                        var svg = d3.select("#plot").transition();
+
+                                        // Make the changes
+                                            svg.select(".line")   // change the line
+                                            .duration(750)
+                                            .attr("d", valueline(data));
+                                            svg.select(".x.axis") // change the x axis
+                                            .duration(750)
+                                            .call(xAxis);
+                                            svg.select(".y.axis") // change the y axis
+                                            .duration(750)
+                                            .call(yAxis);
+
+                                            myLabel.transition().duration(750)
+                                                    .text(function(d) { return name })
+
+                                        });
+                                    }
+                                } //succes closgin
+                            }); // dropdown ajax closing
+                        }); //dropdown closing
+
+
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+
+
+                }); //ajax closing
+            }); //js function closing
+
+</script>
+</body>
+</html>
