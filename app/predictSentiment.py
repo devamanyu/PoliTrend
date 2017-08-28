@@ -7,8 +7,6 @@ from keras.activations import softmax
 from keras.models import load_model
 import gensim
 import datetime as DT
-import matplotlib.pyplot as plt
-import matplotlib
 import urllib
 import csv
 
