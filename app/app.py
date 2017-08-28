@@ -18,7 +18,7 @@ def main():
 	 Rendering the landing page
 	''''''''''''''''''''''''''''''''''''''
 	'''
-    return render_template('index.html')
+	return render_template('index.html')
 
 @app.route('/getName', methods=['POST'])
 def getName():

@@ -214,7 +214,7 @@
                                           "translate(" + margin.left + "," + margin.top + ")");
 
                                         // Get the data
-                                        d3.csv("/static/"+json+".csv", function(error, data) {
+                                        d3.csv("/static/data/"+json+".csv", function(error, data) {
                                             data.forEach(function(d) {
                                                 d.date = parseDate(d.date);
                                                 d.close = +d.close;
@@ -260,7 +260,7 @@
                                     function updateData(json) {
 
                                         // Get the data again
-                                        d3.csv("/static/"+json+".csv", function(error, data) {
+                                        d3.csv("/static/data/"+json+".csv", function(error, data) {
                                             data.forEach(function(d) {
                                                 d.date = parseDate(d.date);
                                                 d.close = +d.close;

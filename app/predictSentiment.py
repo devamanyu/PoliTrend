@@ -35,7 +35,7 @@ def predict(name=None):
 	dates =  [DT.datetime.strptime(time[i], '%Y-%m-%d %H:%M:%S') for i in range(len(time))]
 	dates = [dates[i].strftime("%d-%b-%y") for i in range(len(time))]
 
-	with open("./static/"+tempname+".csv","w") as  t:
+	with open("./static/data/"+tempname+".csv","w") as  t:
 		temp = csv.writer(t,delimiter=",")
 		row=[]
 		row.append("date")
