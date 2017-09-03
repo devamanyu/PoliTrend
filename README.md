@@ -1,6 +1,9 @@
 # PoliTrend
 A Sentiment Trend Analyser for Political Entities in Wikipedia.
 
+<p align="center">
+  <img src ="animation.gif" />
+</p>
 
 
 ## Dependencies
