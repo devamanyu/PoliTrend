@@ -1,6 +1,6 @@
 numpy==1.13.1
 pandas==0.19.2
-urllib3==1.22
+urllib3==1.26.5
 beautifulsoup4==4.6.0
 gensim==2.3.0
 Keras==2.0.5
